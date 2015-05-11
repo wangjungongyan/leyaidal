@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="  
+            http://www.springframework.org/schema/beans  
+            http://www.springframework.org/schema/beans/spring-beans-2.0.xsd  
+            http://www.springframework.org/schema/aop  
+            http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	<bean id="daoAutoAdvice" class="com.leya.idal.aop.DAOAutoAdvice" />
+
+	<bean id="sqlTraceAdvice" class="com.leya.idal.aop.SqlTraceAdvice" />
+
+	<bean id="parentAdvisor"
+		class="org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">
+		<!-- This property should be insteaded. -->
+		<property name="expression" value="execution (* com.leya..dao..*.*(..))" />
+	</bean>
+
+	<bean id="daoAutoAdvisor" parent="parentAdvisor">
+		<property name="advice" ref="daoAutoAdvice" />
+	</bean>
+
+	<bean id="sqlTraceAdvisor" parent="parentAdvisor">
+		<property name="advice" ref="sqlTraceAdvice" />
+	</bean>
+
+	<bean id="parentDao" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="interceptorNames">
+			<list>
+				<value>sqlTraceAdvisor</value>
+				<value>daoAutoAdvisor</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="mysqlSqlReplacer" class="com.leya.idal.aop.replace.MysqlSqlReplacer" />
+
+	<bean id="sqlserverSqlReplacer" class="com.leya.idal.aop.replace.SqlserverSqlReplacer" />
+
+</beans>
